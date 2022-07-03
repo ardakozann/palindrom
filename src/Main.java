@@ -4,7 +4,12 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		FindPalindrom findPalindrom = new FindPalindrom();
-		System.out.println(findPalindrom.palindromeTamamlayiciSayi("1209")); 
+		System.out.println(findPalindrom.palindromeTamamlayiciSayi("437532462718437532462718437532462718437532462799437532462718437532462718437532462718437532462718")); 
+		//System.out.println(findPalindrom.palindromeTamamlayiciSayi("123456")); 
 	}
 
 }
+
+//437,532,462,718,437,532,462,718,437,532,462,718,437,532,462,718,817,264,235,734,817,264,235,734,817,264,235,734,817,264,235,734
+//559731773016379731773016379731773016379731773016
+//559731773016379731773016379731773016379731773016

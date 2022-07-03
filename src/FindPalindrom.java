@@ -17,51 +17,130 @@ public class FindPalindrom {
 			}
 		}
 		
-		//Gelen sayiyi first ne last olarak ayırdım.
-		String first = firstHalfOfString(sayi);
+		//Kullanılacak değişkenler
+		StringBuilder temp = new StringBuilder (sayi);
+		StringBuilder result = new StringBuilder();
+		StringBuilder fromBeforeTransaction = new StringBuilder();
 		
-		int sayiInt = Integer.parseInt(sayi);
-		int firstInt = Integer.parseInt(first);
+		//result değişkenini 0lardan oluşan sayi uzunluğunda bir string yapıyorum.
+		//Recursive yapıdan dolayı önceki metottan kalmaları toplamak için fromBeforeTransaction değişkeni yaptım.
+		for(int i=0; i < sayi.length(); i++) {
+			result.append('0');
+			fromBeforeTransaction.append('0');
+		}
+		
+		for(int i=0; i < temp.length()/2; i++) {
+			//Uzunluğu tek olan sayılarda ortadaki sayıya gelirse kontrol etmeyecek.
+			if(i == temp.length()-1-i) {
+				break;
+			}
 
-		//Sayının ilk yarımını 1 arttır ve sonra polindrom bul, asıl sayıdan çıkart
-		firstInt++;
-		//Sayının ilk kısmını Stringe çevir
-		first = String.valueOf(firstInt);
-		//İşlemler dolayısıyla first içerisinde fazla olan sayılar silindi.
-		String reverseFirst = checkBeforeCombining(sayi.length(), first);
+			//Eğer sol yarımdaki rakam sağ yarımdaki rakamdan büyükse
+			//direkt soldaki rakamı sağa atama ypaıyor.
+			if(temp.charAt(i) > temp.charAt(temp.length()-1-i)) {
+				
+				//Aradaki farkı result değişkeninde length()-1-i indeksine setliyorum
+				int temp1 = substraction(temp.charAt(i), temp.charAt(temp.length()-1-i));	
+				
+				result.setCharAt(temp.length()-1-i, intToChar(temp1));
+				temp.setCharAt(temp.length()-1-i, temp.charAt(i));
+			}
 			
-		//Sayının ilk yarısını ve ilk yarısının terse çevrilmiş halini stringe ekliyorum
-		String palindrom = first + reverseFirst;
-		int palindromInt = Integer.parseInt(palindrom);
+			//Eğer sol yarımdaki rakam sağ yarımdaki rakamdan küçükse
+			else if(temp.charAt(i) < temp.charAt(temp.length()-1-i)) {	
+				
+				//10 ile soldaki rakamı toplayıp, toplamdan sağdakini çıkartıyorum.
+				int temp1 = 10 + substraction(temp.charAt(i), temp.charAt(temp.length()-1-i));
+				
+				//Soldaki rakama sağa atama yapıyorum.
+				temp.setCharAt(temp.length()-1-i, temp.charAt(i));
+				
+				//sağ yarımdaki atama yaptığımın 1 solundaki rakamı 1 arttırıyorum
+				//eğer onunda solunda 1 varsa diye recursive metota gönderiyorum.
+				temp = changeNextTo(temp, temp.length()-2-i);
+
+				//Eğer sayi değişkeninin sol yarımında değişiklik varsa 
+				//palindromeTamamlayiciSayi metotu recursive yapıda kullanarak
+				//Sol yarımda değişmiş halini yeniden metota gönderiyorum ve
+				
+				if(!sayi.substring(0, sayi.length()/2).equals(temp.substring(0, sayi.length()/2))){
+					fromBeforeTransaction = new StringBuilder(palindromeTamamlayiciSayi(temp.toString()));
+
+					//Gelen sonucu farklarını yazdığım string ile topluyorum.
+					result = sum(result, fromBeforeTransaction, result.length()-1);
+
+				}
+				result.setCharAt(temp.length()-1-i, intToChar(temp1));
+			}
+		}
 		
-		//Palindrom sayısından asıl sayı çıkartılıp değer bulmak için
-		String result = String.valueOf(palindromInt - sayiInt);
+		//uzunluğu çift olan (!) ve sol yarımın en sağındaki sayı 1 artırılırsa onu kontrol etmiyor. 
+		//Onun için elle yapıyorum. Eğer sol yarımın en sağındaki rakam orjinaline göre değişmişse
+		//cevap olarak döndüreceğim palindrom olması için gereken sayının aynı indeksteki değerine 1 ekliyorum.
+		if(sayi.length() % 2 == 0 && sayi.charAt((sayi.length()/2)-1) != temp.charAt((temp.length()/2)-1)) {
+			result = changeNextTo(result, result.length()/2);
+		}
 		
-		return result;
+		return removeZeroCharacter(result);
 	}
 	
-	//Eğer firstInt 1 arttırıldığında sayı uzunluğu değişirse onu silmek için kontrol ediyor.
-	//Aynı zamanda sayi uzunluğunu tek sayi ve çift olmasına görede kontrol ediyor.
-	//Sayıyı tersine çevirirken üstteki iki koşuldan dolayı sayının uzunluğu değişiyor
-	//Uzunluğu değişince problem meydana gelmesinden dolayı burada düzeltildi.
-	private String checkBeforeCombining(int sayiLength, String first){
-		String temp = first;
-		String reverseFirst = reverse(Integer.parseInt(first));
-		if(sayiLength % 2 == 1) {
-			if(temp.length() != first.length()) {
-				reverseFirst = reverseFirst.substring(2);
+	private String removeZeroCharacter(StringBuilder temp) {
+		int index = 0;
+		for(int i = 0; i < temp.length(); i++) {
+			if(temp.charAt(i) != '0') {
+				index = i;
+				break;
 			}
-			else {
-				reverseFirst = reverseFirst.substring(1);
-			}
+		}
+		return temp.substring(index);
+	}
+	
+	//Eğer 9 olan bir sayı varsa 1 solundaki kontrol ederek ekleme işlemi yapıyor.
+	//index olarak gönderilen sayı, çalışılan indexin bir soldaki indexi
+	private StringBuilder changeNextTo(StringBuilder str, int index) {
+		
+		int temp = Character.getNumericValue(str.charAt(index));
+		temp++; 
+		
+		if(temp == 10) {
+			str = changeNextTo(str, index-1);
+			temp = 0;
+		}
+		 
+		str.setCharAt(index, intToChar(temp));
+		return str;
+	}
+	
+	//char tipindeki rakamlar arasındaki farkı int tipinden döndürüyor.
+	private int substraction(char left, char right) {
+		return Character.getNumericValue(left) - Character.getNumericValue(right);
+	}
+	
+	private char intToChar(int number) {
+		String temp = String.valueOf(number);
+		return temp.charAt(0);
+	}
+	
+	//result ve fromBeforeTransaction, palindrome için gereken farkların toplamları
+	private StringBuilder sum(StringBuilder result, StringBuilder fromBeforeTransaction, int index) {
+		int temp1, temp2;
+		temp1 = Character.getNumericValue(result.charAt(index));
+		temp2 = Character.getNumericValue(fromBeforeTransaction.charAt(index));
+		temp1 = temp1 + temp2;
+		
+		
+		if(temp1 >= 10) {
+			result = changeNextTo(result, index);
+			result.setCharAt(index, String.valueOf(temp1).charAt(1));
 		}
 		else {
-			if(temp.length() != first.length()) {
-				reverseFirst = reverseFirst.substring(1);
-			}
+			result.setCharAt(index, String.valueOf(temp1).charAt(0));
 		}
-		return reverseFirst;
+		if(index > 0) {
+			result = sum(result, fromBeforeTransaction, index-1);
+		}
 		
+		return result;
 	}
 	
 	//Gönderilen sayı eğer palindrom ise direkt 0 döndürmek için
@@ -81,33 +160,4 @@ public class FindPalindrom {
 		}
 		return true;
 	}
-	
-	//Sayının ilk yarımını string tipinde döndürüyor
-	//Eğer sayının uzunluğu tek ise ortadaki sayıyı da first içerisine alıyor.
-	private String firstHalfOfString(String str) {
-		
-		String half = ""; 
-		if(str.length() % 2 == 0) {
-			for(int i = 0; i < str.length()/2; i++) {
-				half += str.charAt(i);
-			}
-		}
-		else {
-			for(int i = 0; i <= str.length()/2; i++) {
-				half += str.charAt(i);
-			}
-		}	
-		return half;
-	}
-	
-	//Gönderilen sayıyı ters çeviriyor
-	private String reverse(int strInt) {
-		String str = String.valueOf(strInt);
-		String reverse = ""; 
-		for(int i = str.length()-1; i >= 0; i--) {
-			reverse += str.charAt(i);
-		}
-		return reverse;
-	}
-	
 }
